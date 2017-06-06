@@ -1,0 +1,2025 @@
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultRowSorter;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.RowSorter;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+
+class Connect{						//连接数据库
+	public static final String DBDRIVER="org.gjt.mm.mysql.Driver";
+	public static final String DBURL="jdbc:mysql://localhost:3306/HRSystem";
+	public static final String DBUSER="root";
+	public static final String DBPASS="864172";
+	static Connection conn=null;
+	static Statement stmt=null;
+	static ResultSet rs=null;
+	public Connect(){
+		try {
+			Class.forName(DBDRIVER);
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			conn=DriverManager.getConnection(DBURL, DBUSER, DBPASS);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			stmt=conn.createStatement();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}
+
+//[start]  ①培训计划块六个类(PeiXun,PXReview,PXLook,PXNLook,PXForce,PXOK)
+class PeiXun{							//培训计划输入，被class ZhiYuan调用
+	//[start]图形界面一大堆定义属性，千万别打开
+	JFrame frame=new JFrame("输入年度培训计划");
+	JLabel lWhat=new JLabel("培训内容:");
+	JTextField tWhat=new JTextField(30);
+	JLabel lType=new JLabel("培训类别:");
+	JComboBox cType=null;
+	JLabel lWho=new JLabel("培训对象:");
+	JTextField tWho=new JTextField(30);
+	JLabel lHow=new JLabel("培训形式:");
+	JComboBox cHow=null;
+	JLabel lTeacher=new JLabel("培训讲师:");
+	JTextField tTeacher=new JTextField(30);
+	JLabel lPlace=new JLabel("培训地点:");
+	JComboBox cPlace=null;
+	JLabel lTime=new JLabel("培训时间:");
+	JTextField tYear=new JTextField(40);
+	JLabel lYear=new JLabel("年");
+	JTextField tMonth=new JTextField(20);
+	JLabel lMonth=new JLabel("月");
+	JTextField tDay=new JTextField(20);
+	JLabel lDay=new JLabel("日");
+	JTextField tHour=new JTextField(20);
+	JLabel lHour=new JLabel("时");
+	JTextField tMinute=new JTextField(20);
+	JLabel lMinute=new JLabel("分");
+	JLabel lHowLong=new JLabel("培训时长:");
+	JTextField tHourLong=new JTextField(20);
+	JLabel lHourLong=new JLabel("小时");
+	JTextField tMinuteLong=new JTextField(20);
+	JLabel lMinuteLong=new JLabel("分钟");
+	JLabel lExam=new JLabel("考核方式:");
+	JComboBox cExam=null;
+	JButton OK=new JButton("提交");
+	//[end]
+	
+	public PeiXun(){				//插入培训计划
+		//[start]   图形界面一大串代码，你不会想打开的
+		String sType[]={"内部培训","外部培训"};
+		cType=new JComboBox(sType);
+		String sHow[]={"讲师讲授","岗位实习","户外拓展"};
+		cHow=new JComboBox(sHow);
+		String sPlace[]={"会议室","本职岗位","户外拓展基地"};
+		cPlace=new JComboBox(sPlace);
+		String sExam[]={"试卷考核","行为观察"};
+		cExam=new JComboBox(sExam);
+		frame.setLayout(null);
+		lWhat.setBounds(30, 10, 100, 30);
+		tWhat.setBounds(140, 10, 150, 30);
+		lType.setBounds(30, 50, 100, 30);
+		cType.setBounds(140, 50, 150, 30);
+		lWho.setBounds(30, 90, 100, 30);
+		tWho.setBounds(140, 90, 150, 30);
+		lHow.setBounds(30, 130, 100, 30);
+		cHow.setBounds(140, 130, 150, 30);
+		lTeacher.setBounds(30, 170, 100, 30);
+		tTeacher.setBounds(140, 170, 150, 30);
+		lPlace.setBounds(30, 210, 100, 30);
+		cPlace.setBounds(140, 210, 150, 30);
+		lTime.setBounds(30, 250, 100, 30);
+		tYear.setBounds(140, 250, 40, 30);
+		lYear.setBounds(180, 250, 20, 30);
+		tMonth.setBounds(200, 250, 20, 30);
+		lMonth.setBounds(220, 250, 20, 30);
+		tDay.setBounds(240, 250, 20, 30);
+		lDay.setBounds(260, 250, 20, 30);
+		tHour.setBounds(280, 250, 20, 30);
+		lHour.setBounds(300, 250, 20, 30);
+		tMinute.setBounds(320, 250, 20, 30);
+		lMinute.setBounds(340, 250, 20, 30);
+		lHowLong.setBounds(30, 290, 100, 30);
+		tHourLong.setBounds(140, 290, 30, 30);
+		lHourLong.setBounds(170, 290, 40, 30);
+		tMinuteLong.setBounds(210, 290, 30, 30);
+		lMinuteLong.setBounds(240, 290, 40, 30);
+		lExam.setBounds(30, 330, 100, 30);
+		cExam.setBounds(140, 330, 150, 30);
+		OK.setBounds(100, 370, 150, 30);
+		
+		frame.add(lWhat);
+		frame.add(tWhat);
+		frame.add(lType);
+		frame.add(cType);
+		frame.add(lWho);
+		frame.add(tWho);
+		frame.add(lHow);
+		frame.add(cHow);
+		frame.add(lTeacher);
+		frame.add(tTeacher);
+		frame.add(lPlace);
+		frame.add(cPlace);
+		frame.add(lTime);
+		frame.add(tYear);
+		frame.add(lYear);
+		frame.add(tMonth);
+		frame.add(lMonth);
+		frame.add(tDay);
+		frame.add(lDay);
+		frame.add(tHour);
+		frame.add(lHour);
+		frame.add(tMinute);
+		frame.add(lMinute);
+		frame.add(lHowLong);
+		frame.add(tHourLong);
+		frame.add(lHourLong);
+		frame.add(tMinuteLong);
+		frame.add(lMinuteLong);
+		frame.add(lExam);
+		frame.add(cExam);
+		frame.add(OK);
+		
+		frame.setSize(400,610);
+		frame.setLocation(300,100);
+		frame.setVisible(true);
+		//[end]
+		
+		OK.addActionListener(new ActionListener(){			//提交计划表按钮
+			public void actionPerformed(ActionEvent arg0){
+				String sWhat= tWhat.getText();		//插入培训计划表
+				String sType =(String)cType.getSelectedItem();
+				String sWho= tWho.getText();
+				String sHow =(String)cHow.getSelectedItem();
+				String sTeacher= tTeacher.getText();
+				String sPlace =(String)cPlace.getSelectedItem();
+				String sYear= tYear.getText();
+				String sMonth= tMonth.getText();
+				String sDay= tDay.getText();
+				String sHour= tHour.getText();
+				String sMinute= tMinute.getText();
+				String sHourLong= tHourLong.getText();
+				String sMinuteLong= tMinuteLong.getText();
+				String sExam =(String)cExam.getSelectedItem();
+				String sTime=""+sYear+"-"+sMonth+"-"+sDay+" "+sHour+":"+sMonth+":00";
+				//System.out.println(sTime);
+				String sql="INSERT INTO train(what,type,who,how,teacher,place,time,howlong,exam)"+"VALUES('"+sWhat+"','"+sType+"','"+sWho+"','"+sHow+"','"+sTeacher+"','"+sPlace+"','"+sTime+"','"+sHourLong+"小时"+sMinuteLong+"分钟','"+sExam+"')";
+				System.out.println("计划提交成功,等待审核");
+				new Insert(sql);  //调用方法插入数据
+			}
+		});
+	}
+}
+
+class PXReview{							//员工查看正在审核的计划
+	private JFrame frame=new JFrame("查看正在审核的计划");
+	private String[] titles={"编号","内容","类别","对象","形式","讲师","地点","时间","时长","考核方式","审核情况"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	public PXReview(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		
+		new Connect();
+		String sql="select *from train where review='未审核'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rWhat=Connect.rs.getString("What");
+				String rType=Connect.rs.getString("type");
+				String rWho=Connect.rs.getString("who");
+				String rHow=Connect.rs.getString("how");
+				String rTeacher=Connect.rs.getString("teacher");
+				String rPlace=Connect.rs.getString("place");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				String rHowLong=Connect.rs.getString("howlong");
+				String rExam=Connect.rs.getString("exam");
+				String rReview=Connect.rs.getString("review");
+				tableModel.addRow(new Object[]{rNo,rWhat,rType,rWho,rHow,rTeacher,rPlace,d+" "+t,rHowLong,rExam,rReview});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+}
+
+class PXLook implements ActionListener{				//主任查看培训申请并进行审批，被class ZhuRen调用
+	private JFrame frame=new JFrame("查看培训计划申请");
+	private String[] titles={"编号","内容","类别","对象","形式","讲师","地点","时间","时长","考核方式"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton PassRow=new JButton("通过");
+	private JButton NotPassRow=new JButton("不通过");
+	public PXLook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		pan.add(PassRow);
+		pan.add(NotPassRow);
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.PassRow.addActionListener(this);
+		this.NotPassRow.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from train where review='未审核'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rWhat=Connect.rs.getString("What");
+				String rType=Connect.rs.getString("type");
+				String rWho=Connect.rs.getString("who");
+				String rHow=Connect.rs.getString("how");
+				String rTeacher=Connect.rs.getString("teacher");
+				String rPlace=Connect.rs.getString("place");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				String rHowLong=Connect.rs.getString("howlong");
+				String rExam=Connect.rs.getString("exam");
+				tableModel.addRow(new Object[]{rNo,rWhat,rType,rWho,rHow,rTeacher,rPlace,d+" "+t,rHowLong,rExam});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.PassRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update train set review='审核通过' where No='"+oNo+"'";
+			System.out.println("计划"+oNo+"审核通过");
+			new Update(sql);
+		}
+		if(e.getSource()==this.NotPassRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update train set review='审核未通过' where No='"+oNo+"'";
+			System.out.println("计划"+oNo+"审核未通过");
+			new Update(sql);
+		}
+	}
+}
+
+class PXNLook implements ActionListener{			//职员查看未通过的培训申请并进行修改，被class ZhiYuan调用
+	private JFrame frame=new JFrame("查看培训计划申请");
+	private String[] titles={"编号","内容","类别","对象","形式","讲师","地点","时间","时长","考核方式"};
+	protected DefaultTableModel tableModel=null;
+	protected JTable table=null;
+	protected Object[][] userInfo={};
+	private JButton AlterRow=new JButton("修改");
+	private JComboBox TypeList=new JComboBox();
+	private JComboBox HowList=new JComboBox();
+	private JComboBox PlaceList=new JComboBox();
+	private JComboBox ExamList=new JComboBox();
+	public PXNLook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		this.TypeList.addItem("内部培训");this.TypeList.addItem("外部培训");
+		this.HowList.addItem("讲师讲授");this.HowList.addItem("岗位实习");this.HowList.addItem("户外拓展");
+		this.PlaceList.addItem("会议室");this.PlaceList.addItem("本职岗位");this.PlaceList.addItem("户外拓展基地");
+		this.ExamList.addItem("试卷考核");this.ExamList.addItem("行为观察");
+		this.table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(this.TypeList));
+		this.table.getColumnModel().getColumn(4).setCellEditor(new DefaultCellEditor(this.HowList));
+		this.table.getColumnModel().getColumn(6).setCellEditor(new DefaultCellEditor(this.PlaceList));
+		this.table.getColumnModel().getColumn(9).setCellEditor(new DefaultCellEditor(this.ExamList));
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		pan.add(AlterRow);
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.AlterRow.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from train where review='审核未通过'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rWhat=Connect.rs.getString("What");
+				String rType=Connect.rs.getString("type");
+				String rWho=Connect.rs.getString("who");
+				String rHow=Connect.rs.getString("how");
+				String rTeacher=Connect.rs.getString("teacher");
+				String rPlace=Connect.rs.getString("place");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				String rHowLong=Connect.rs.getString("howlong");
+				String rExam=Connect.rs.getString("exam");
+				tableModel.addRow(new Object[]{rNo,rWhat,rType,rWho,rHow,rTeacher,rPlace,d+" "+t,rHowLong,rExam});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.AlterRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			Object oWhat=table.getValueAt(row,1);
+			Object oType=table.getValueAt(row,2);
+			Object oWho=table.getValueAt(row,3);
+			Object oHow=table.getValueAt(row,4);
+			Object oTeacher=table.getValueAt(row,5);
+			Object oPlace=table.getValueAt(row,6);
+			Object oTime=table.getValueAt(row,7);
+			Object oHowLong=table.getValueAt(row,8);
+			Object oExam=table.getValueAt(row,9);
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update train set what='"+oWhat+"',type='"+oType+"',who='"+oWho+"', how='"+oHow+"',"
+					+ "teacher='"+oTeacher+"',place='"+oPlace+"',time='"+oTime+"',howlong='"+oHowLong+"',"
+							+ "exam='"+oExam+"',review='未审核' where No='"+oNo+"'";
+			System.out.println("计划"+oNo+"修改成功，等待审核");
+			new Update(sql);
+		}
+	}
+}
+
+class PXForce implements ActionListener{			//查看审核通过的计划并实施，被class ZhiYuan调用
+	JFrame frame=new JFrame("查看审核通过的培训计划");
+	private String[] titles={"编号","内容","类别","对象","形式","讲师","地点","时间","时长","考核方式"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton ForceRow=new JButton("实施");
+	public PXForce(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		pan.add(ForceRow);
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.ForceRow.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from train where review='审核通过'and flag='未实施'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rWhat=Connect.rs.getString("What");
+				String rType=Connect.rs.getString("type");
+				String rWho=Connect.rs.getString("who");
+				String rHow=Connect.rs.getString("how");
+				String rTeacher=Connect.rs.getString("teacher");
+				String rPlace=Connect.rs.getString("place");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				String rHowLong=Connect.rs.getString("howlong");
+				String rExam=Connect.rs.getString("exam");
+				tableModel.addRow(new Object[]{rNo,rWhat,rType,rWho,rHow,rTeacher,rPlace,d+" "+t,rHowLong,rExam});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.ForceRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update train set flag='已实施' where No='"+oNo+"'";
+			System.out.println("计划"+oNo+"已实施");
+			new Update(sql);
+		}
+	}
+}
+
+class PXOK{											//查看已实施的培训计划，被class ZhiYuan调用
+	private JFrame frame=new JFrame("查看培训计划申请");
+	private String[] titles={"编号","内容","类别","对象","形式","讲师","地点","时间","时长","考核方式"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	public PXOK(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		
+		new Connect();
+		String sql="select *from train where flag='已实施'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rWhat=Connect.rs.getString("What");
+				String rType=Connect.rs.getString("type");
+				String rWho=Connect.rs.getString("who");
+				String rHow=Connect.rs.getString("how");
+				String rTeacher=Connect.rs.getString("teacher");
+				String rPlace=Connect.rs.getString("place");
+				java.util.Date d=Connect.rs.getDate("time");
+				java.sql.Time t=Connect.rs.getTime("time");
+				String rHowLong=Connect.rs.getString("howlong");
+				String rExam=Connect.rs.getString("exam");
+				tableModel.addRow(new Object[]{rNo,rWhat,rType,rWho,rHow,rTeacher,rPlace,d+" "+t,rHowLong,rExam});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+}
+//[end]
+
+//[start]  ②合同四个类(HeTong,HTWOver,HTOver,AllHT)
+class HeTong{							//输入合同
+	//[start]图形界面一大堆定义属性，千万别打开
+	JFrame frame=new JFrame("输入新合同");
+	JLabel lName=new JLabel("员工姓名:");
+	JTextField tName=new JTextField(30);
+	JLabel lSex=new JLabel("性别:");
+	JComboBox cSex=null;
+	JLabel lDepar=new JLabel("部门:");
+	JComboBox cDepar=null;
+	JLabel lJob=new JLabel("职位:");
+	JTextField tJob=new JTextField(30);
+	JLabel lSalary=new JLabel("工资:");
+	JTextField tSalary=new JTextField(30);
+	JLabel lSalary2=new JLabel("元");
+	JLabel lTime=new JLabel("入职日期:");
+	JTextField tYear=new JTextField(40);
+	JLabel lYear=new JLabel("年");
+	JTextField tMonth=new JTextField(20);
+	JLabel lMonth=new JLabel("月");
+	JTextField tDay=new JTextField(20);
+	JLabel lDay=new JLabel("日");
+	JLabel lCdt=new JLabel("合同期限:");
+	JTextField tYear2=new JTextField(40);
+	JLabel lYear2=new JLabel("年");
+	JTextField tMonth2=new JTextField(20);
+	JLabel lMonth2=new JLabel("月");
+	JTextField tDay2=new JTextField(20);
+	JLabel lDay2=new JLabel("日");
+	JButton OK=new JButton("提交");
+	//[end]
+	String sNo=null;
+	HeTong(){
+		//[start]   图形界面一大串代码，你不会想打开的
+		String sSex[]={"男","女"};
+		cSex=new JComboBox(sSex);
+		String sDepar[]={"人事部","车间","质检部","销售部","经济运行部"};
+		cDepar=new JComboBox(sDepar);
+		frame.setLayout(null);
+		lName.setBounds(30, 10, 100, 30);
+		tName.setBounds(140, 10, 150, 30);
+		lSex.setBounds(30, 50, 100, 30);
+		cSex.setBounds(140, 50, 150, 30);
+		lDepar.setBounds(30, 90, 100, 30);
+		cDepar.setBounds(140, 90, 150, 30);
+		lJob.setBounds(30, 130, 100, 30);
+		tJob.setBounds(140, 130, 150, 30);
+		lSalary.setBounds(30, 170, 100, 30);
+		tSalary.setBounds(140, 170, 130, 30);
+		lSalary2.setBounds(270, 170, 20, 30);
+		lTime.setBounds(30, 210, 100, 30);
+		tYear.setBounds(140, 210, 40, 30);
+		lYear.setBounds(180, 210, 20, 30);
+		tMonth.setBounds(200, 210, 20, 30);
+		lMonth.setBounds(220, 210, 20, 30);
+		tDay.setBounds(240, 210, 20, 30);
+		lDay.setBounds(260, 210, 20, 30);
+		lCdt.setBounds(30, 250, 100, 30);
+		tYear2.setBounds(140, 250, 40, 30);
+		lYear2.setBounds(180, 250, 20, 30);
+		tMonth2.setBounds(200, 250, 20, 30);
+		lMonth2.setBounds(220, 250, 20, 30);
+		tDay2.setBounds(240, 250, 20, 30);
+		lDay2.setBounds(260, 250, 20, 30);
+		OK.setBounds(100, 290, 150, 30);
+		
+		frame.add(lName);frame.add(tName);
+		frame.add(lSex);frame.add(cSex);
+		frame.add(lDepar);frame.add(cDepar);
+		frame.add(lJob);frame.add(tJob);
+		frame.add(lSalary);frame.add(tSalary);frame.add(lSalary2);
+		frame.add(lTime);frame.add(tYear);frame.add(lYear);frame.add(tMonth);
+		frame.add(lMonth);frame.add(tDay);frame.add(lDay);
+		frame.add(lCdt);frame.add(tYear2);frame.add(lYear2);frame.add(tMonth2);
+		frame.add(lMonth2);frame.add(tDay2);frame.add(lDay2);
+		frame.add(OK);
+		
+		frame.setSize(400,610);
+		frame.setLocation(300,100);
+		frame.setVisible(true);
+		//[end]
+		
+		OK.addActionListener(new ActionListener(){			//提交合同按钮
+			public void actionPerformed(ActionEvent arg0){
+				String sName= tName.getText();		//插入培训计划表
+				String sSex =(String)cSex.getSelectedItem();
+				String sDepar =(String)cDepar.getSelectedItem();
+				String sJob= tJob.getText();
+				String sSalary =tSalary.getText();
+				String sYear= tYear.getText();
+				String sMonth= tMonth.getText();
+				String sDay= tDay.getText();
+				String sYear2= tYear2.getText();
+				String sMonth2= tMonth2.getText();
+				String sDay2= tDay2.getText();
+				String sTime=""+sYear+"-"+sMonth+"-"+sDay+"";
+				String sTime2=""+sYear2+"-"+sMonth2+"-"+sDay2+"";
+				//System.out.println(sTime);
+				String sql="INSERT INTO Contract(cname,csex,cdepartment,cjob,csalary,chiredate,ccdt)"+
+				"VALUES('"+sName+"','"+sSex+"','"+sDepar+"','"+sJob+"','"+sSalary+"','"+sTime+"','"+sTime2+"')";
+				new Insert(sql);
+				
+				new Connect();
+				String sql3="SELECT * FROM hrsystem.Contract ORDER BY No DESC LIMIT 0,1;";
+				try {
+					Connect.stmt.executeQuery(sql3);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				try {
+					Connect.rs=Connect.stmt.executeQuery(sql3);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					while(Connect.rs.next()){
+						sNo=Connect.rs.getString("No");
+						}
+				}catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				new Close();		//调用方法关闭数据库
+				String sql2="insert into Employee(name,sex,department,job,salary,hiredate,cdt,cno)"+
+				"VALUES('"+sName+"','"+sSex+"','"+sDepar+"','"+sJob+"','"+sSalary+"','"+sTime+"','"+sTime2+"','"+sNo+"')";
+				new Insert(sql2);
+				System.out.println("合同提交成功");
+			}
+		});
+	}
+}
+
+class HTWOver implements ActionListener{			//查看即将过期的合同并选择是否续约
+	JFrame frame=new JFrame("查看即将过期的合同");
+	private String[] titles={"编号","姓名","性别","部门","职位","工资","入职时间","合同期限","剩余天数"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JLabel lYear=new JLabel("续约");
+	private JTextField tYear=new JTextField(2);
+	private JLabel lYear2=new JLabel("年         ");
+	private JButton Continue=new JButton("确定续约");
+	public HTWOver(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		JLabel lTime=new JLabel();
+		pan.add(lYear);
+		pan.add(tYear);
+		pan.add(lYear2);
+		pan.add(Continue);
+		pan.add(lTime);
+		DateFormat df1=DateFormat.getDateInstance();
+		lTime.setText(     df1.format(new Date()));
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyy-MM-dd");
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.Continue.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from contract where DATEDIFF(ccdt,now())>=0 and DATEDIFF(ccdt,now())<=7";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rName=Connect.rs.getString("cName");
+				String rSex=Connect.rs.getString("cSex");
+				String rDepar=Connect.rs.getString("cDepartment");
+				String rJob=Connect.rs.getString("cJob");
+				String rSalary=Connect.rs.getString("cSalary");
+				java.util.Date d1=Connect.rs.getDate("cHiredate");
+				java.util.Date d2=Connect.rs.getDate("cCdt");
+				String day2=Connect.rs.getString("cCdt");
+				long m=sdf.parse(day2).getTime()-sdf.parse(df1.format(new Date())).getTime();
+				long day=m/(1000*60*60*24);
+				String rDay=String.valueOf(day);
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,d1,d2,rDay});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.Continue){
+			
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			String sYear=tYear.getText(); 
+			String sql="update Contract set ccdt=DATE_ADD(ccdt,INTERVAL '"+sYear+"' YEAR) where No='"+oNo+"'";
+			String sql2="update Employee set cdt=DATE_ADD(cdt,INTERVAL '"+sYear+"' YEAR) where cNo='"+oNo+"'";
+			System.out.println("成功续约");
+			new Update(sql);
+			new Update(sql2);
+			this.tableModel.removeRow(row);//删除所选行
+		}
+	}
+}
+
+class HTOver implements ActionListener{					//查看过期的合同并处理
+	JFrame frame=new JFrame("查看过期的合同");
+	private String[] titles={"编号","姓名","性别","部门","职位","工资","入职时间","合同期限"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton Cancel=new JButton("解除合约");
+	public HTOver(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		JLabel lTime=new JLabel();
+		pan.add(Cancel);
+		pan.add(lTime);
+		DateFormat df1=DateFormat.getDateInstance();
+		lTime.setText(     df1.format(new Date()));
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.Cancel.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from contract where DATEDIFF(ccdt,now())<0 and cflag='合同有效'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rName=Connect.rs.getString("cName");
+				String rSex=Connect.rs.getString("cSex");
+				String rDepar=Connect.rs.getString("cDepartment");
+				String rJob=Connect.rs.getString("cJob");
+				String rSalary=Connect.rs.getString("cSalary");
+				java.util.Date d1=Connect.rs.getDate("cHiredate");
+				java.util.Date d2=Connect.rs.getDate("cCdt");
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,d1,d2});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.Cancel){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update Contract set cflag='合同失效' where No='"+oNo+"'";
+			String sql2="update employee set flag='离职' where cNo='"+oNo+"'";
+			new Update(sql);
+			new Update(sql2);
+		}
+	}
+}
+
+class AllHT implements ActionListener{					//查看所有的合同,※带排序和筛选功能！
+	JFrame frame=new JFrame("查看所有的合同");
+	private String[] titles={"编号","姓名","性别","部门","职位","工资","入职时间","合同期限"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton Cancel=new JButton("解除合约");
+	public AllHT(){
+		tableModel=new DefaultTableModel(this.userInfo,this.titles){
+			public Class getColumnClass(int column){
+			Class returnValue;
+			if((column>=0)&&(column<getColumnCount())){
+				returnValue=getValueAt(0,column).getClass();
+			}
+			else{
+				returnValue=Object.class;
+				}
+			return returnValue;
+				}
+			};
+		table=new JTable(tableModel);
+		JScrollPane scr=new JScrollPane(table);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);;//添加这两条实现排序
+		table.setRowSorter(sorter);//添加这两条实现排序
+		frame.add(scr,BorderLayout.CENTER);
+		
+		JScrollPane pane=new JScrollPane(table);  //添加下面这一段实现筛选
+		frame.add(pane,BorderLayout.CENTER);
+		JLabel label=new JLabel("筛选条件:");
+		JLabel label2=new JLabel("     ");
+		JButton button=new JButton("筛选");
+		final JTextField filterText=new JTextField(5);
+		JPanel pan=new JPanel();
+		pan.add(label);pan.add(filterText);pan.add(button);
+		pan.add(label2);pan.add(Cancel);
+		this.frame.add(pan,BorderLayout.NORTH);
+		
+		button.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String text=filterText.getText();
+					if(text.length()==0){
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(null);
+					}else{
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(RowFilter.regexFilter(text));
+					}
+					//tableModel.fireTableDataChanged();
+				}
+			});					
+		//添加上面这一段实现筛选
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.Cancel.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from contract where cflag='合同有效'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rName=Connect.rs.getString("cName");
+				String rSex=Connect.rs.getString("cSex");
+				String rDepar=Connect.rs.getString("cDepartment");
+				String rJob=Connect.rs.getString("cJob");
+				String rSalary=Connect.rs.getString("cSalary");
+				java.util.Date d1=Connect.rs.getDate("cHiredate");
+				java.util.Date d2=Connect.rs.getDate("cCdt");
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,d1,d2});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.Cancel){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			int modelRow=table.convertRowIndexToModel(row);//！！！很重要的一行，将视图中的行数转换为模型中的行数※
+			this.tableModel.removeRow(modelRow);//删除所选行，使用排序和筛选要想实现删除必须加这行和上面那行
+			String sql="update Contract set cflag='合同失效' where No='"+oNo+"'";
+			String sql2="update employee set flag='离职' where cNo='"+oNo+"'";
+			new Update(sql);
+			new Update(sql2);
+		}
+	}
+}
+//[end]
+
+//[start]  ③调动通知几个类(DiaoDong,DDLook,bDDNLook)
+class DiaoDong implements ActionListener{				//人事部职员发布调动通知,※带排序和筛选功能！
+	JFrame frame=new JFrame("发布调动通知");
+	private String[] titles={"编号","姓名","性别","部门","职位","工资"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton Transfer=new JButton("调动");
+	public DiaoDong(){
+		tableModel=new DefaultTableModel(this.userInfo,this.titles){
+			public Class getColumnClass(int column){
+			Class returnValue;
+			if((column>=0)&&(column<getColumnCount())){
+				returnValue=getValueAt(0,column).getClass();
+			}
+			else{
+				returnValue=Object.class;
+				}
+			return returnValue;
+				}
+			};
+		table=new JTable(tableModel);
+		JScrollPane scr=new JScrollPane(table);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);;//添加这两条实现排序
+		table.setRowSorter(sorter);//添加这两条实现排序
+		frame.add(scr,BorderLayout.CENTER);
+		
+		JScrollPane pane=new JScrollPane(table);  	//添加下面这一段实现筛选
+		frame.add(pane,BorderLayout.CENTER);
+		JLabel label=new JLabel("筛选条件:");
+		JLabel label2=new JLabel("     ");
+		JButton button=new JButton("筛选");
+		final JTextField filterText=new JTextField(5);
+		JPanel pan=new JPanel();
+		pan.add(label);pan.add(filterText);pan.add(button);
+		pan.add(label2);pan.add(Transfer);
+		this.frame.add(pan,BorderLayout.NORTH);
+		
+		button.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String text=filterText.getText();
+					if(text.length()==0){
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(null);
+					}else{
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(RowFilter.regexFilter(text));
+					}
+					//tableModel.fireTableDataChanged();
+				}
+			});
+													//添加上面这一段实现筛选
+		
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.Transfer.addActionListener(this);
+		
+		new Connect();
+		String sql="select contract.* from contract,employee where contract.no=employee.cno and cflag='合同有效' and flag2 is null";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rName=Connect.rs.getString("cName");
+				String rSex=Connect.rs.getString("cSex");
+				String rDepar=Connect.rs.getString("cDepartment");
+				String rJob=Connect.rs.getString("cJob");
+				String rSalary=Connect.rs.getString("cSalary");
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.Transfer){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			int modelRow=table.convertRowIndexToModel(row);//！！！很重要的一行，将视图中的行数转换为模型中的行数※
+			//this.tableModel.removeRow(modelRow);//删除所选行，使用排序和筛选要想实现删除必须加这行和上面那行
+			Object oName=table.getValueAt(row,1);
+			Object oSex=table.getValueAt(row,2);
+			Object oDepar=table.getValueAt(row,3);
+			Object oJob=table.getValueAt(row,4);
+			Object oSalary=table.getValueAt(row,5);
+			
+			//[start]弹出调动窗口
+			JFrame frame=new JFrame("填写调动信息");
+			frame.setLayout(null);
+			JLabel lNum=new JLabel("员工编号:");lNum.setBounds(40, 20, 80, 30);
+			JLabel lNum2=new JLabel();lNum2.setBounds(120, 20, 40, 30);
+			lNum2.setText((String) oNo);
+			JLabel lName=new JLabel("员工姓名:");lName.setBounds(160, 20, 80, 30);
+			JLabel lName2=new JLabel();lName2.setBounds(240, 20, 80, 30);
+			lName2.setText((String) oName);
+			JLabel lRemind=new JLabel("调动前");lRemind.setBounds(140, 60, 80, 30);
+			JLabel lRemind2=new JLabel("调动后");lRemind2.setBounds(240, 60, 80, 30);
+			JLabel lDepar=new JLabel("部门");lDepar.setBounds(40, 100, 80, 30);//部门↓
+			JLabel lDepar2=new JLabel();lDepar2.setBounds(140, 100, 80, 30);
+			lDepar2.setText((String) oDepar);
+			String sDepar[]={"人事部","车间","质检部","销售部","经济运行部"};
+			JComboBox cDepar=new JComboBox(sDepar);			cDepar.setBounds(230, 100, 100, 30);//部门↑
+			JLabel lJob=new JLabel("职位");			lJob.setBounds(40, 140, 80, 30);//职位↓
+			JLabel lJob2=new JLabel();				lJob2.setBounds(140, 140, 80, 30);
+			lJob2.setText((String) oJob);
+			JTextField tJob=new JTextField(10);		tJob.setBounds(230, 140, 100, 30);//职位↑
+			JLabel lSalary=new JLabel("职位");		lSalary.setBounds(40, 180, 80, 30);//工资↓
+			JLabel lSalary2=new JLabel();			lSalary2.setBounds(140, 180, 80, 30);
+			lSalary2.setText((String) oSalary);
+			JTextField tSalary=new JTextField(10);	tSalary.setBounds(230, 180, 100, 30);//工资↑
+			JButton bOK=new JButton("调动");			bOK.setBounds(120,220,80,30);
+			
+			frame.add(lNum);frame.add(lNum2);frame.add(lName);frame.add(lName2);
+			frame.add(lRemind);frame.add(lRemind2);
+			frame.add(lDepar);frame.add(lDepar2);frame.add(cDepar);
+			frame.add(lJob);frame.add(lJob2);frame.add(tJob);
+			frame.add(lSalary);frame.add(lSalary2);frame.add(tSalary);frame.add(bOK);
+			
+			frame.setSize(430, 330);
+			frame.setLocation(310,210);
+			frame.setVisible(true);
+			
+			bOK.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent arg0){
+					String depar=(String)cDepar.getSelectedItem();
+					String sJob=tJob.getText();
+					String sSalary=tSalary.getText();
+					String sql="insert into Transfer(Num,TName,TDepartment,TJob,TSalary,NewDep,NewJob,NewSalary,TType)"+
+							"VALUES('"+oNo+"','"+oName+"','"+oDepar+"','"+oJob+"','"+oSalary+"','"+depar+"','"+sJob+"','"+sSalary+"','待审核')";
+					String sql2="update employee set flag2='职位调动审核中' where cNo='"+oNo+"'";
+					new Insert(sql);
+					new Update(sql2);
+				}
+			});
+			//[end]
+		}
+	}
+}
+
+class DDLook implements ActionListener{					//人事部主任查看调动通知并审核
+	private JFrame frame=new JFrame("查看职位调动通知");
+	private String[] titles={"编号","员工编号","姓名","原部门","原职位","原工资","新部门","新职位","新工资"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton PassRow=new JButton("同意");
+	private JButton NotPassRow=new JButton("不同意");
+	public DDLook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		pan.add(PassRow);
+		pan.add(NotPassRow);
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.PassRow.addActionListener(this);
+		this.NotPassRow.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from transfer where ttype='待审核'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rNum=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("tname");
+				String rDepar=Connect.rs.getString("tDepartment");
+				String rJob=Connect.rs.getString("tJob");
+				String rSalary=Connect.rs.getString("tSalary");
+				String rNDepar=Connect.rs.getString("newdep");
+				String rNJob=Connect.rs.getString("newJob");
+				String rNSalary=Connect.rs.getString("newSalary");
+				tableModel.addRow(new Object[]{rNo,rNum,rName,rDepar,rJob,rSalary,rNDepar,rNJob,rNSalary});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.PassRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,1);//根据行号和列号，获取某个单元格的值
+			Object oNDepar=table.getValueAt(row,6);
+			Object oNJob=table.getValueAt(row,7);
+			Object oNSalary=table.getValueAt(row,8);
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update transfer set ttype='审核通过' where Num='"+oNo+"'";
+			String sql2="update contract set cdepartment='"+oNDepar+"',cjob='"+oNJob+"',csalary='"+oNSalary+"'where No='"+oNo+"'";
+			String sql3="update employee set department='"+oNDepar+"',job='"+oNJob+"',salary='"+oNSalary+"',flag2=null where cNo='"+oNo+"'";
+			new Update(sql);
+			new Update(sql2);
+			new Update(sql3);
+		}
+		if(e.getSource()==this.NotPassRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update transfer set ttype='审核未通过' where No='"+oNo+"'";
+			new Update(sql);
+		}
+	}
+}
+
+class bDDNLook implements ActionListener{				//职员查看未通过的职位调动申请并进行修改
+	private JFrame frame=new JFrame("查看未通过审核的职位调动通知");
+	private String[] titles={"编号","员工编号","姓名","原部门","原职位","原工资","新部门","新职位","新工资"};
+	protected DefaultTableModel tableModel=null;
+	protected JTable table=null;
+	protected Object[][] userInfo={};
+	private JButton AlterRow=new JButton("修改");
+	private JComboBox DeparList=new JComboBox();
+	private JComboBox NDeparList=new JComboBox();
+	public bDDNLook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		this.DeparList.addItem("人事部");this.DeparList.addItem("车间");this.DeparList.addItem("质检部");
+		this.DeparList.addItem("销售部");this.DeparList.addItem("经济运行部");
+		this.NDeparList.addItem("人事部");this.NDeparList.addItem("车间");this.NDeparList.addItem("质检部");
+		this.NDeparList.addItem("销售部");this.NDeparList.addItem("经济运行部");
+		this.table.getColumnModel().getColumn(3).setCellEditor(new DefaultCellEditor(this.DeparList));
+		this.table.getColumnModel().getColumn(6).setCellEditor(new DefaultCellEditor(this.NDeparList));
+		JScrollPane scr=new JScrollPane(this.table);
+		JPanel pan=new JPanel();
+		pan.add(AlterRow);
+		this.frame.add(pan,BorderLayout.NORTH);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		this.AlterRow.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from transfer where ttype='审核未通过'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rNum=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("tname");
+				String rDepar=Connect.rs.getString("tDepartment");
+				String rJob=Connect.rs.getString("tJob");
+				String rSalary=Connect.rs.getString("tSalary");
+				String rNDepar=Connect.rs.getString("newdep");
+				String rNJob=Connect.rs.getString("newJob");
+				String rNSalary=Connect.rs.getString("newSalary");
+				tableModel.addRow(new Object[]{rNo,rNum,rName,rDepar,rJob,rSalary,rNDepar,rNJob,rNSalary});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.AlterRow){
+			int row=table.getSelectedRow();//获取选中的行号
+			Object oNo=table.getValueAt(row,0);//根据行号和列号，获取某个单元格的值
+			Object oNum=table.getValueAt(row,1);
+			Object oName=table.getValueAt(row,2);
+			Object oDepar=table.getValueAt(row,3);
+			Object oJob=table.getValueAt(row,4);
+			Object oSalary=table.getValueAt(row,5);
+			Object oNDepar=table.getValueAt(row,6);
+			Object oNJob=table.getValueAt(row,7);
+			Object oNSalary=table.getValueAt(row,8);
+			this.tableModel.removeRow(row);//删除所选行
+			String sql="update transfer set num='"+oNum+"',tname='"+oName+"',tdepartment='"+oDepar+"', tjob='"+oJob+"',"
+					+ "tsalary='"+oSalary+"',newdep='"+oNDepar+"',newjob='"+oNJob+"',newsalary='"+oNSalary+"',"
+							+ "ttype='待审核' where No='"+oNo+"'";
+			new Update(sql);
+		}
+	}
+}
+
+class bDDYLook{											//职员查看审核通过的职位调动通知
+	private JFrame frame=new JFrame("查看通过审核的职位调动通知");
+	private String[] titles={"编号","员工编号","姓名","原部门","原职位","原工资","新部门","新职位","新工资","审核情况"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	public bDDYLook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		
+		new Connect();
+		String sql="select *from transfer where ttype='审核通过'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rNum=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("tname");
+				String rDepar=Connect.rs.getString("tDepartment");
+				String rJob=Connect.rs.getString("tJob");
+				String rSalary=Connect.rs.getString("tSalary");
+				String rNDepar=Connect.rs.getString("newdep");
+				String rNJob=Connect.rs.getString("newJob");
+				String rNSalary=Connect.rs.getString("newSalary");
+				String rType=Connect.rs.getString("ttype");
+				tableModel.addRow(new Object[]{rNo,rNum,rName,rDepar,rJob,rSalary,rNDepar,rNJob,rNSalary,rType});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+}
+
+class bDDILook{											//职员查看正在审核的职位调动通知
+	private JFrame frame=new JFrame("查看正在审核的职位调动通知");
+	private String[] titles={"编号","员工编号","姓名","原部门","原职位","原工资","新部门","新职位","新工资","审核情况"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	public bDDILook(){
+		this.tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		this.table=new JTable(this.tableModel);
+		JScrollPane scr=new JScrollPane(this.table);
+		this.frame.add(scr,BorderLayout.CENTER);
+		this.frame.setSize(800,400);
+		this.frame.setLocation(300,100);
+		this.frame.setVisible(true);
+		
+		new Connect();
+		String sql="select *from transfer where ttype='待审核'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("No");
+				String rNum=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("tname");
+				String rDepar=Connect.rs.getString("tDepartment");
+				String rJob=Connect.rs.getString("tJob");
+				String rSalary=Connect.rs.getString("tSalary");
+				String rNDepar=Connect.rs.getString("newdep");
+				String rNJob=Connect.rs.getString("newJob");
+				String rNSalary=Connect.rs.getString("newSalary");
+				String rType=Connect.rs.getString("ttype");
+				tableModel.addRow(new Object[]{rNo,rNum,rName,rDepar,rJob,rSalary,rNDepar,rNJob,rNSalary,rType});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+}
+//[end]
+
+//[start]  ④人员信息统计一个大类(TongJi)
+class TongJi implements ActionListener{
+	static JPanel pan2=new JPanel();
+	private String[] titles={"员工编号","姓名","性别","部门","职位","工资","入职时间","合同期限"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton ExcelOut=new JButton("输出Excel表");
+	public TongJi(){
+		pan2.setLayout(new BorderLayout());
+		tableModel=new DefaultTableModel(this.userInfo,this.titles){
+			public Class getColumnClass(int column){
+			Class returnValue;
+			if((column>=0)&&(column<getColumnCount())){
+				returnValue=getValueAt(0,column).getClass();
+			}
+			else{
+				returnValue=Object.class;
+				}
+			return returnValue;
+				}
+			};
+		table=new JTable(tableModel);
+		JScrollPane scr=new JScrollPane(table);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);;//添加这两条实现排序
+		table.setRowSorter(sorter);//添加这两条实现排序
+		pan2.add(scr,BorderLayout.CENTER);
+		
+		JScrollPane pane=new JScrollPane(table);  //添加下面这一段实现筛选
+		pan2.add(pane,BorderLayout.CENTER);
+		JLabel label=new JLabel("筛选条件:");
+		JLabel label2=new JLabel("     ");
+		JButton button=new JButton("筛选");
+		final JTextField filterText=new JTextField(5);
+		JPanel pan=new JPanel();
+		pan.add(label);pan.add(filterText);pan.add(button);
+		pan.add(label2);pan.add(ExcelOut);
+		pan.setPreferredSize(new Dimension(0,40));
+		pan2.setPreferredSize(new Dimension(680,450));
+		this.pan2.add(pan,BorderLayout.NORTH);
+		
+		button.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String text=filterText.getText();
+					if(text.length()==0){
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(null);
+					}else{
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(RowFilter.regexFilter(text));
+					}
+					//tableModel.fireTableDataChanged();
+				}
+			});					
+		//添加上面这一段实现筛选
+		
+		this.ExcelOut.addActionListener(this);
+		
+		new Connect();
+		String sql="select *from Employee where flag='在职'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("Name");
+				String rSex=Connect.rs.getString("Sex");
+				String rDepar=Connect.rs.getString("Department");
+				String rJob=Connect.rs.getString("Job");
+				String rSalary=Connect.rs.getString("Salary");
+				java.util.Date d1=Connect.rs.getDate("Hiredate");
+				java.util.Date d2=Connect.rs.getDate("Cdt");
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,d1,d2});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.ExcelOut){
+			//  待写入的，实现输出Excel表的功能块（大问题）
+		}
+	}
+}
+//[end]
+
+//[start] 数据库操作四个类+弹出提示框(Num,Insert,Update,Close,Tip)
+class Num{							//用来查询某个表中符合某个条件的个数
+	String sql;
+	int i;
+	public Num(String sql){
+		new Connect();
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				i=i+1;
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public int geti(){
+		return i;
+	}
+}
+class Insert{						//用来向某个数据库中插入数据
+	String sql;
+	public Insert(String sql){
+		new Connect();
+		try {
+			Connect.stmt.executeUpdate(sql);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try{
+			Connect.stmt.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+		try{
+			Connect.conn.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+	}
+}
+class Update{						//用来更新数据库
+	String sql;
+	public Update(String sql){
+		new Connect();
+		try {
+			Connect.stmt.executeUpdate(sql);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		try{
+			Connect.stmt.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+		try{
+			Connect.conn.close();
+		}catch(SQLException e){
+			e.printStackTrace();
+		}
+	}
+}
+class Close{
+	public Close(){
+		try {
+			Connect.stmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.conn.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+}
+
+class Tip{
+	JFrame frame=new JFrame("主任的界面");
+	JLabel lRemind=new JLabel("操作成功!");
+	JButton bClose=new JButton("确定");
+	public Tip(){
+		frame.setLayout(null);
+		lRemind.setBounds(55, 10, 80, 30);
+		bClose.setBounds(50, 50, 60, 30);
+		frame.add(lRemind);
+		frame.add(bClose);
+		frame.setSize(180, 140);
+		frame.setLocation(300,200);
+		frame.setVisible(true);
+		bClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				frame.dispose();
+			}
+		});
+	}
+}
+
+//[end]
+
+class ZhuRen{					//主任
+	int i=0;
+	JFrame frame=new JFrame("主任的界面");
+	JLabel lRemind=new JLabel("您有");
+	JLabel lRemind2=new JLabel("条培训计划未审批");
+	JLabel lPXNUM=new JLabel();
+	JButton bLook=new JButton("查看");
+	JLabel lRemind3=new JLabel("您有");
+	JLabel lRemind4=new JLabel("条职位调动未审批");
+	JLabel lDDNUM=new JLabel();
+	JButton bLook2=new JButton("查看");
+	public ZhuRen(){
+		String sql="select *from train where review='未审核'";
+		String sql2="select *from transfer where ttype='待审核'";
+		Num num=new Num(sql);
+		Num num2=new Num(sql2);
+		int i=num.geti();
+		int j=num2.geti();
+		String num11=String.valueOf(i);
+		String num22=String.valueOf(j); 
+		lPXNUM.setText(num11);
+		lDDNUM.setText(num22);
+		frame.setLayout(null);
+		lRemind.setBounds(60, 20, 40, 30);
+		lPXNUM.setBounds(100, 20, 20, 30);
+		lRemind2.setBounds(120, 20, 140, 30);
+		bLook.setBounds(260, 20, 60, 30);
+		lRemind3.setBounds(60, 60, 40, 30);
+		lDDNUM.setBounds(100, 60, 20, 30);
+		lRemind4.setBounds(120, 60, 140, 30);
+		bLook2.setBounds(260, 60, 60, 30);
+		frame.add(lRemind);
+		frame.add(lPXNUM);
+		frame.add(lRemind2);
+		if(i!=0)frame.add(bLook);
+		frame.add(lRemind3);
+		frame.add(lDDNUM);
+		frame.add(lRemind4);
+		if(i!=0)frame.add(bLook2);
+		
+		frame.setSize(700, 610);
+		frame.setLocation(200,50);
+		frame.setVisible(true);
+		
+		bLook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PXLook();
+			}
+		});
+		bLook2.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new DDLook();
+			}
+		});
+	}
+}
+
+class ZhiYuan{					//人事部职员
+	JFrame frame=new JFrame("人事部职员的界面");
+	
+	Container cont=frame.getContentPane();
+	JTabbedPane tab=null;
+	JPanel pPX=new JPanel();
+	JPanel pHT=new JPanel();
+	JPanel pDD=new JPanel();
+	JPanel pTJ=new JPanel();
+	
+	//[start]   pPX 分页一 用于操作年度计划
+	JButton PeiXun=new JButton("输入年度培训计划");
+	JButton bForce=new JButton("查看审核通过的计划");
+	JLabel lRemindi=new JLabel("您有");
+	JLabel lRemindi2=new JLabel("条正在审核的培训计划");
+	JLabel lPXINUM=new JLabel();
+	JButton bILook=new JButton("查看正在审核的计划");
+	JLabel lRemind=new JLabel("您有");
+	JLabel lRemind2=new JLabel("条培训计划审批未通过,请修改");
+	JLabel lPXNUM=new JLabel();
+	JButton bLook=new JButton("查看审核未通过的计划");
+	JLabel lRemind3=new JLabel("您有");
+	JLabel lRemind4=new JLabel("条培训计划审批已通过,可实施");
+	JLabel lPXFNUM=new JLabel();
+	JButton bPXOK=new JButton("查看已实施的计划");
+	//[end]
+	
+	//[start]   pHT 分页二 用于操作合同
+	JButton HeTong=new JButton("输入合同");
+	JButton bWOver=new JButton("查看即将过期的合同");
+	JLabel lRemindO1=new JLabel("有");
+	JLabel lHTWOver=new JLabel();
+	JLabel lRemindO2=new JLabel("份合同七天内即将过期");
+	JButton bOver=new JButton("查看过期的合同");
+	JLabel lRemindO3=new JLabel("有");
+	JLabel lHTOver=new JLabel();
+	JLabel lRemindO4=new JLabel("份合同已过期，请处理");
+	JButton bAllHT=new JButton("查看所有合同");
+	//[end]
+	
+	//[start]	pDD 分页三 调动通知
+	JButton DiaoDong=new JButton("发布调动通知");
+	JLabel lRemindDDi=new JLabel("您有");
+	JLabel lRemindDDi2=new JLabel("条正在审批的职位调动通知");
+	JLabel lDDINUM=new JLabel();
+	JButton bDDILook=new JButton("查看审核未通过的调动");
+	JLabel lRemindDD=new JLabel("您有");
+	JLabel lRemindDD2=new JLabel("条职位调动审批未通过,请修改");
+	JLabel lDDNNUM=new JLabel();
+	JButton bDDNLook=new JButton("查看审核未通过的调动");
+	
+	JButton bDDYLook=new JButton("查看审核通过的调动");
+	//[end]
+	
+	public ZhiYuan(){
+		//[start] 用于计算每个表符合条件的数据数目,用于显示通知条数
+		String sql="select *from train where review='审核未通过'";
+		String sql2="select *from train where review='审核通过'and flag='未实施'";
+		String sql3="select *from contract where DATEDIFF(ccdt,now())>=0 and DATEDIFF(ccdt,now())<=7";
+		String sql4="select *from contract where DATEDIFF(ccdt,now())<0 and cflag='合同有效'";
+		String sql5="select *from transfer where ttype='审核未通过'";
+		String sql6="select *from train where review='未审核'";
+		String sql7="select *from transfer where ttype='待审核'";
+		Num num1=new Num(sql);
+		Num num22=new Num(sql2);
+		Num num33=new Num(sql3);
+		Num num44=new Num(sql4);
+		Num num55=new Num(sql5);
+		Num num66=new Num(sql6);
+		Num num77=new Num(sql7);
+		int i=num1.geti();
+		int j=num22.geti();
+		int k=num33.geti();
+		int l=num44.geti();
+		int m=num55.geti();
+		int n=num66.geti();
+		int o=num77.geti();
+		String num=String.valueOf(i); 
+		String num2=String.valueOf(j); 
+		String num3=String.valueOf(k); 
+		String num4=String.valueOf(l); 
+		String num5=String.valueOf(m); 
+		String num6=String.valueOf(n); 
+		String num7=String.valueOf(o); 
+		lPXNUM.setText(num);
+		lPXFNUM.setText(num2);
+		lHTWOver.setText(num3);
+		lHTOver.setText(num4);
+		lDDNNUM.setText(num5);
+		lPXINUM.setText(num6);
+		lDDINUM.setText(num7);
+		//[end]
+		
+		//[start]关于培训计划的绝对布局
+		PeiXun.setBounds(40, 20, 170, 30);//输入培训计划
+		lRemindi.setBounds(240, 60, 40, 30);//↓正在审核的培训计划
+		lPXINUM.setBounds(280, 60, 20, 30);
+		lRemindi2.setBounds(300, 60, 180, 30);
+		bILook.setBounds(40, 60, 170, 30);//↑正在审核的培训计划
+		lRemind.setBounds(240, 100, 40, 30);//↓未通过的培训计划
+		lPXNUM.setBounds(280, 100, 20, 30);
+		lRemind2.setBounds(300, 100, 180, 30);
+		bLook.setBounds(40, 100, 170, 30);//↑未通过的培训计划
+		bForce.setBounds(40, 140, 170, 30);//↓通过的计划
+		lRemind3.setBounds(240, 140, 40, 30);
+		lPXFNUM.setBounds(280, 140, 20, 30);
+		lRemind4.setBounds(300, 140, 180, 30);//↑通过的计划
+		bPXOK.setBounds(40, 180, 170, 30);//实施的计划
+		//[end]
+		
+		//[start]关于合同的绝对布局
+		HeTong.setBounds(40, 20, 170, 30);//输入合同
+		lRemindO1.setBounds(240, 60, 40, 30);//↓即将过期的合同
+		lHTWOver.setBounds(280, 60, 20, 30);
+		lRemindO2.setBounds(300, 60, 180, 30);
+		bWOver.setBounds(40, 60, 170, 30);//↑即将过期的合同
+		lRemindO3.setBounds(240, 100, 40, 30);//↓过期的合同
+		lHTOver.setBounds(280, 100, 20, 30);
+		lRemindO4.setBounds(300, 100, 180, 30);
+		bOver.setBounds(40, 100, 170, 30);//↑过期的合同
+		bAllHT.setBounds(40, 140, 170, 30);//查看所有的合同
+		//[end]
+		
+		//[start]关于调动通知的绝对布局
+		DiaoDong.setBounds(40, 20, 170, 30);//发布调动通知
+		lRemindDDi.setBounds(240, 60, 40, 30);//↓正在审核的调动通知
+		lDDINUM.setBounds(280, 60, 20, 30);
+		lRemindDDi2.setBounds(300, 60, 180, 30);
+		bDDILook.setBounds(40, 60, 170, 30);//↑正在审核的调动通知
+		lRemindDD.setBounds(240, 100, 40, 30);//↓未通过的调动通知
+		lDDNNUM.setBounds(280, 100, 20, 30);
+		lRemindDD2.setBounds(300, 100, 180, 30);
+		bDDNLook.setBounds(40, 100, 170, 30);//↑未通过的调动通知
+		bDDYLook.setBounds(40, 140, 170, 30);//通过的职位调动
+		//[end]
+		
+		tab=new JTabbedPane(JTabbedPane.TOP);//那啥，分页导航条
+		pPX.setLayout(null);
+		pHT.setLayout(null);
+		pDD.setLayout(null);
+		//pTJ.setLayout(null);
+		
+		//[start]培训计划组件添加入JPanel
+		pPX.add(PeiXun);//输入培训计划
+		pPX.add(lRemind);//↓未通过的培训计划
+		pPX.add(lPXNUM);
+		pPX.add(lRemind2);
+		pPX.add(bLook);//↑未通过的培训计划
+		pPX.add(lRemindi);//↓正在审核的培训计划
+		pPX.add(lPXINUM);
+		pPX.add(lRemindi2);
+		pPX.add(bILook);//↑正在审核的培训计划
+		pPX.add(bForce);//↓通过的计划
+		pPX.add(lRemind3);
+		pPX.add(lPXFNUM);
+		pPX.add(lRemind4);//↑通过的计划
+		pPX.add(bPXOK);//实施的计划
+		//[end]
+		
+		//[start]合同组件添加入JPanel
+		pHT.add(HeTong);//输入合同
+		pHT.add(lRemindO1);//↓即将过期的合同
+		pHT.add(lHTWOver);
+		pHT.add(lRemindO2);
+		pHT.add(bWOver);//↑即将过期的合同
+		pHT.add(lRemindO3);//↓过期的合同
+		pHT.add(lHTOver);
+		pHT.add(lRemindO4);
+		pHT.add(bOver);//↑过期的合同
+		pHT.add(bAllHT);
+		//[end]
+		
+		//[start]调动组件添加入JPanel
+		pDD.add(DiaoDong);
+		pDD.add(lRemindDDi);//↓正在审核的职位调动
+		pDD.add(lDDINUM);
+		pDD.add(lRemindDDi2);
+		pDD.add(bDDILook);//↑正在审核的职位调动
+		pDD.add(lRemindDD);//↓未通过的职位调动
+		pDD.add(lDDNNUM);
+		pDD.add(lRemindDD2);
+		pDD.add(bDDNLook);//↑未通过的职位调动
+		pDD.add(bDDYLook);
+		//[end]
+		
+		//[start]人员统计添加入JPanel      待写
+		new TongJi();
+		pTJ.add(TongJi.pan2);
+		//[end]
+		
+		tab.addTab("培训计划",pPX);
+		tab.addTab("合同信息",pHT);
+		tab.addTab("调动通知",pDD);
+		tab.addTab("人员信息统计",pTJ);
+		cont.add(tab);
+		
+		frame.setSize(700, 610);
+		frame.setLocation(200,50);
+		frame.setVisible(true);
+		
+		//[start]  分页1关于培训计划中四个按钮的触发
+		PeiXun.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PeiXun();				//调用输入年度计划窗口
+			}
+		});
+		bLook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PXNLook();				//调用查看未通过审核的计划
+			}
+		});
+		bForce.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PXForce();				//调用输入年度计划窗口
+			}
+		});
+		bPXOK.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PXOK();				//调用输入年度计划窗口
+			}
+		});
+		bILook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new PXReview();				//调用输入年度计划窗口
+			}
+		});
+		//[end]
+
+		//[start]  分页2关于合同中四个按钮的触发
+		HeTong.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new HeTong();				//调用输入合同窗口
+			}
+		});
+		bWOver.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new HTWOver();				//调用查看即将过期合同
+			}
+		});
+		bOver.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new HTOver();				//调用查看过期合同
+			}
+		});
+		bAllHT.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new AllHT();				//调用查看所有合同
+			}
+		});
+		//[end]
+		
+		//[start]	分页3关于调动中n个按钮的触发
+		DiaoDong.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new DiaoDong();				//调用输入调动通知窗口
+			}
+		});
+		bDDNLook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new bDDNLook();				//调用修改调动通知窗口
+			}
+		});
+		bDDYLook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new bDDYLook();				//调用查看通过的调动通知窗口
+			}
+		});
+		bDDILook.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				new bDDILook();				//调用查看通过的调动通知窗口
+			}
+		});
+		//[end]
+	}
+}
+
+class HRSystem{					//登录界面
+	JFrame frame=new JFrame("Welcome");
+	JLabel lUsername=new JLabel("用户名:");
+	JLabel lPassword=new JLabel("密码:");
+	JTextField tUsername=new JTextField(30);
+	JPasswordField tPassword=new JPasswordField();
+	JComboBox Type=null;
+	JButton Login=new JButton("登录");
+	JLabel lSay=new JLabel("请输入账号密码");
+	String sql=null;
+	String rPassword=null;//用于获取数据库中password的值，验证登录账号密码是否匹配
+	String rType=null; //用来获取数据库中type的值，用于比较所登录账号的职位是否与下拉选框选择的相同
+	String rName=null;
+	
+	public HRSystem(){
+		frame.setLayout(null);
+		String answer[]={"主任","职员"};
+		Type=new JComboBox(answer);
+		frame.setLayout(null);
+		lUsername.setBounds(60, 20, 50, 30);
+		tUsername.setBounds(150, 20, 150, 30);
+		lPassword.setBounds(60, 70, 50, 30);
+		tPassword.setBounds(150, 70, 150, 30);
+		Type.setBounds(60, 120, 100, 30);
+		Login.setBounds(290, 120, 100, 30);
+		lSay.setBounds(150,170,250,30);
+		frame.add(lUsername);
+		frame.add(tUsername);
+		frame.add(lPassword);
+		frame.add(tPassword);
+		frame.add(Login);
+		frame.add(Type);
+		frame.add(lSay);
+		frame.setVisible(true);
+		frame.setSize(430, 330);
+		frame.setLocation(310,210);
+		
+		Login.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0){
+				String type=(String)Type.getSelectedItem();//把下拉选框取得的值赋给type
+				new Connect();                             //调用方法连接数据库
+				String tname=tUsername.getText();				//把输入的账号赋给tname
+				String tpass=new String(tPassword.getPassword());  //获取输入的密码
+				sql="select * from Employee where Num="+tname+"";  //查找Employee表中的内容
+				try {
+					Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					Connect.rs=Connect.stmt.executeQuery(sql);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				try {
+					while(Connect.rs.next()){              //从select的内容中，把密码和类型赋给变量
+							rPassword=Connect.rs.getString("password");
+							rType=Connect.rs.getString("job");
+							rName=Connect.rs.getString("name");
+						}
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				new Close();		//调用方法关闭数据库
+				if(rPassword.equals(tpass)){     //验证密码
+					if(arg0.getSource()==Login){
+						if(type.equals("主任")&&rType.equals("主任")){  //验证身份
+							new ZhuRen();
+							lSay.setText("欢迎您！"+rName+"主任！");
+						}
+						else if(type.equals("职员")&&!rType.equals("主任")){
+							lSay.setText("欢迎您！"+rName+",登陆成功！");
+							new ZhiYuan();
+						}
+						else{
+							lSay.setText("身份选择错误");
+						}
+							
+				}
+				else{
+					lSay.setText("账号或密码错误，请重新输入");
+					}
+				}
+			}
+		});
+	}
+}
+
+public class S8E1HRSystem {     //主程序
+	public static void main(String args[]){
+		new HRSystem();
+	}
+}

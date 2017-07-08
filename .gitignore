@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.swing.DefaultCellEditor;
@@ -199,6 +200,7 @@ class PeiXun{							//培训计划输入，被class ZhiYuan调用
 				String sql="INSERT INTO train(what,type,who,how,teacher,place,time,howlong,exam)"+"VALUES('"+sWhat+"','"+sType+"','"+sWho+"','"+sHow+"','"+sTeacher+"','"+sPlace+"','"+sTime+"','"+sHourLong+"小时"+sMinuteLong+"分钟','"+sExam+"')";
 				System.out.println("计划提交成功,等待审核");
 				new Insert(sql);  //调用方法插入数据
+				frame.dispose();
 			}
 		});
 	}
@@ -678,6 +680,7 @@ class HeTong{							//输入合同
 				"VALUES('"+sName+"','"+sSex+"','"+sDepar+"','"+sJob+"','"+sSalary+"','"+sTime+"','"+sTime2+"','"+sNo+"')";
 				new Insert(sql2);
 				System.out.println("合同提交成功");
+				frame.dispose();
 			}
 		});
 	}
@@ -1084,6 +1087,7 @@ class DiaoDong implements ActionListener{				//人事部职员发布调动通知
 					String sql2="update employee set flag2='职位调动审核中' where cNo='"+oNo+"'";
 					new Insert(sql);
 					new Update(sql2);
+					frame.dispose();
 				}
 			});
 			//[end]
@@ -1252,6 +1256,7 @@ class bDDNLook implements ActionListener{				//职员查看未通过的职位调
 					+ "tsalary='"+oSalary+"',newdep='"+oNDepar+"',newjob='"+oNJob+"',newsalary='"+oNSalary+"',"
 							+ "ttype='待审核' where No='"+oNo+"'";
 			new Update(sql);
+			frame.dispose();
 		}
 	}
 }
@@ -1366,7 +1371,7 @@ class TongJi implements ActionListener{
 	private DefaultTableModel tableModel=null;
 	private JTable table=null;
 	private Object[][] userInfo={};
-	private JButton ExcelOut=new JButton("输出Excel表");
+	private JButton ExcelOut=new JButton("输出员工表");
 	public TongJi(){
 		pan2.setLayout(new BorderLayout());
 		tableModel=new DefaultTableModel(this.userInfo,this.titles){
@@ -1440,6 +1445,163 @@ class TongJi implements ActionListener{
 				java.util.Date d1=Connect.rs.getDate("Hiredate");
 				java.util.Date d2=Connect.rs.getDate("Cdt");
 				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,d1,d2});
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+	}
+	public void actionPerformed(ActionEvent e){
+		if(e.getSource()==this.ExcelOut){
+			//  待写入的，实现输出Excel表的功能块（大问题）
+		}
+	}
+}
+//[end]
+
+//[start]  ⑤工资统计一个大类(GongZi)
+class GongZi implements ActionListener{
+	static JPanel pan3=new JPanel();
+	private String[] titles={"员工编号","姓名","性别","部门","职位","应发工资","个人所得税","奖金","实发工资"};
+	private DefaultTableModel tableModel=null;
+	private JTable table=null;
+	private Object[][] userInfo={};
+	private JButton ExcelOut=new JButton("输出工资表");
+	private JLabel lTime=new JLabel();
+	private JLabel lMonth=new JLabel();
+	private JLabel lTip=new JLabel("月份工资表");
+	public GongZi(){
+		pan3.setLayout(new BorderLayout());
+		tableModel=new DefaultTableModel(this.userInfo,this.titles);
+		table=new JTable(tableModel);
+		JScrollPane scr=new JScrollPane(table);
+		RowSorter<TableModel> sorter = new TableRowSorter<TableModel>(tableModel);;//添加这两条实现排序
+		table.setRowSorter(sorter);//添加这两条实现排序
+		pan3.add(scr,BorderLayout.CENTER);
+		DateFormat df1=DateFormat.getDateInstance();
+		lTime.setText(     df1.format(new Date()));
+		JScrollPane pane=new JScrollPane(table);  //添加下面这一段实现筛选
+		pan3.add(pane,BorderLayout.CENTER);
+		JLabel label=new JLabel("      筛选条件:");
+		JLabel label2=new JLabel("     ");
+		JButton button=new JButton("筛选");
+		final JTextField filterText=new JTextField(5);
+		JPanel pan=new JPanel();
+		pan.add(lMonth);pan.add(lTip);
+		pan.add(label);pan.add(filterText);pan.add(button);
+		pan.add(label2);pan.add(ExcelOut);pan.add(lTime);
+		pan.setPreferredSize(new Dimension(0,40));
+		pan3.setPreferredSize(new Dimension(680,450));
+		this.pan3.add(pan,BorderLayout.NORTH);
+		
+		button.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String text=filterText.getText();
+					if(text.length()==0){
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(null);
+					}else{
+						((DefaultRowSorter<TableModel, Integer>) sorter).setRowFilter(RowFilter.regexFilter(text));
+					}
+					//tableModel.fireTableDataChanged();
+				}
+			});					
+		//添加上面这一段实现筛选
+		
+		this.ExcelOut.addActionListener(this);
+		
+		new Connect();
+		double icl=0,itx=0,ixh=0,ihgl=0,ixsl=0,iwcl=0,isr=0,isj=0;
+		Calendar cal=Calendar.getInstance();
+		int month=cal.get(Calendar.MONTH);
+		String rMonth=String.valueOf(month); 
+		lMonth.setText(rMonth);
+		String sql2="select *from data where month='"+month+"'";
+		try {
+			Connect.stmt.executeQuery(sql2);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql2);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rcl=Connect.rs.getString("cl");
+				icl=Integer.parseInt(rcl);
+				String rtx=Connect.rs.getString("tx");
+				itx=Integer.parseInt(rtx);
+				String rxh=Connect.rs.getString("xh");
+				ixh=Integer.parseInt(rxh);
+				String rhgl=Connect.rs.getString("hgl");
+				ihgl=Integer.parseInt(rhgl);
+				String rxsl=Connect.rs.getString("xsl");
+				ixsl=Integer.parseInt(rxsl);
+				String rwcl=Connect.rs.getString("wcl");
+				iwcl=Integer.parseInt(rwcl);
+				String rsr=Connect.rs.getString("sr");
+				isr=Integer.parseInt(rsr);
+				String rsj=Connect.rs.getString("sj");
+				isj=Integer.parseInt(rsj);
+			}
+		}catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		new Close();		//调用方法关闭数据库
+		
+		
+		new Connect();
+		String sql="select *from Employee where flag='在职'";
+		try {
+			Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			Connect.rs=Connect.stmt.executeQuery(sql);
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
+			while(Connect.rs.next()){
+				String rNo=Connect.rs.getString("Num");
+				String rName=Connect.rs.getString("Name");
+				String rSex=Connect.rs.getString("Sex");
+				String rDepar=Connect.rs.getString("Department");
+				String rJob=Connect.rs.getString("Job");
+				String rSalary=Connect.rs.getString("Salary");
+				//计算所得税↓
+				double iSui=0;
+				int iSalary=Integer.parseInt(rSalary);
+				if((iSalary-3500)<0) iSui=0;
+				else if(3500<iSalary&&iSalary<5000) iSui=-(iSalary*0.03);
+				else if(1500<(iSalary-3500)&&(iSalary-3500)<4500) iSui=-(iSalary*0.10);
+				else if(4500<(iSalary-3500)&&(iSalary-3500)<9000) iSui=-(iSalary*0.20);
+				else if(9000<(iSalary-3500)&&(iSalary-3500)<35000) iSui=-(iSalary*0.25);
+				else if(35000<(iSalary-3500)&&(iSalary-3500)<55000) iSui=-(iSalary*0.30);
+				else if(55000<(iSalary-3500)&&(iSalary-3500)<80000) iSui=-(iSalary*0.35);
+				else if((iSalary-3500)>80000) iSui=-(iSalary*0.45);
+				String rSui=String.valueOf(iSui); 
+				//计算所得税↑
+				//计算奖金↓
+				double iJiang=0;
+				if(rDepar.equals("车间")) iJiang=iSalary*0.1*(ihgl/100);
+				else if(rDepar.equals("人事部")) iJiang=iSalary*0.1;
+				else if(rDepar.equals("质检部")) iJiang=iSalary*0.1;
+				else if(rDepar.equals("经济运行部")) iJiang=iSalary*0.1;
+				else if(rDepar.equals("销售部")) iJiang=isr*(1-(isj/100))*(iwcl/100)*0.01;
+				String rJiang=String.valueOf(iJiang); 
+				//计算奖金↑
+				double igz=iSalary+iSui+iJiang;
+				String rgz=String.valueOf(igz); 
+				tableModel.addRow(new Object[]{rNo,rName,rSex,rDepar,rJob,rSalary,rSui,rJiang,rgz});
 			}
 		}catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -1660,6 +1822,7 @@ class ZhiYuan{					//人事部职员
 	JPanel pHT=new JPanel();
 	JPanel pDD=new JPanel();
 	JPanel pTJ=new JPanel();
+	JPanel pGZ=new JPanel();
 	
 	//[start]   pPX 分页一 用于操作年度计划
 	JButton PeiXun=new JButton("输入年度培训计划");
@@ -1696,7 +1859,7 @@ class ZhiYuan{					//人事部职员
 	JLabel lRemindDDi=new JLabel("您有");
 	JLabel lRemindDDi2=new JLabel("条正在审批的职位调动通知");
 	JLabel lDDINUM=new JLabel();
-	JButton bDDILook=new JButton("查看审核未通过的调动");
+	JButton bDDILook=new JButton("查看正在审批的调动");
 	JLabel lRemindDD=new JLabel("您有");
 	JLabel lRemindDD2=new JLabel("条职位调动审批未通过,请修改");
 	JLabel lDDNNUM=new JLabel();
@@ -1704,6 +1867,7 @@ class ZhiYuan{					//人事部职员
 	
 	JButton bDDYLook=new JButton("查看审核通过的调动");
 	//[end]
+
 	
 	public ZhiYuan(){
 		//[start] 用于计算每个表符合条件的数据数目,用于显示通知条数
@@ -1792,6 +1956,7 @@ class ZhiYuan{					//人事部职员
 		pHT.setLayout(null);
 		pDD.setLayout(null);
 		//pTJ.setLayout(null);
+		//pGZ.setLayout(null);
 		
 		//[start]培训计划组件添加入JPanel
 		pPX.add(PeiXun);//输入培训计划
@@ -1836,15 +2001,21 @@ class ZhiYuan{					//人事部职员
 		pDD.add(bDDYLook);
 		//[end]
 		
-		//[start]人员统计添加入JPanel      待写
+		//[start]人员统计添加入JPanel
 		new TongJi();
 		pTJ.add(TongJi.pan2);
+		//[end]
+		
+		//[start]人员统计添加入JPanel
+		new GongZi();
+		pGZ.add(GongZi.pan3);
 		//[end]
 		
 		tab.addTab("培训计划",pPX);
 		tab.addTab("合同信息",pHT);
 		tab.addTab("调动通知",pDD);
 		tab.addTab("人员信息统计",pTJ);
+		tab.addTab("工资",pGZ);
 		cont.add(tab);
 		
 		frame.setSize(700, 610);
@@ -1970,7 +2141,7 @@ class HRSystem{					//登录界面
 				new Connect();                             //调用方法连接数据库
 				String tname=tUsername.getText();				//把输入的账号赋给tname
 				String tpass=new String(tPassword.getPassword());  //获取输入的密码
-				sql="select * from Employee where Num="+tname+"";  //查找Employee表中的内容
+				sql="select * from user where username='"+tname+"'";  //查找user表中的内容
 				try {
 					Connect.stmt.executeQuery(sql);
 				} catch (SQLException e) {
@@ -1986,8 +2157,8 @@ class HRSystem{					//登录界面
 				try {
 					while(Connect.rs.next()){              //从select的内容中，把密码和类型赋给变量
 							rPassword=Connect.rs.getString("password");
-							rType=Connect.rs.getString("job");
-							rName=Connect.rs.getString("name");
+							rType=Connect.rs.getString("type");
+							rName=Connect.rs.getString("username");
 						}
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
@@ -1998,7 +2169,7 @@ class HRSystem{					//登录界面
 					if(arg0.getSource()==Login){
 						if(type.equals("主任")&&rType.equals("主任")){  //验证身份
 							new ZhuRen();
-							lSay.setText("欢迎您！"+rName+"主任！");
+							lSay.setText("欢迎您！"+rName+"！");
 						}
 						else if(type.equals("职员")&&!rType.equals("主任")){
 							lSay.setText("欢迎您！"+rName+",登陆成功！");
@@ -2022,4 +2193,3 @@ public class S8E1HRSystem {     //主程序
 	public static void main(String args[]){
 		new HRSystem();
 	}
-}
